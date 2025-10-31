@@ -1,0 +1,81 @@
+import matplotlib.pyplot as plt
+from collections import Counter
+
+# === Fungsi Enkripsi Vigenère ===
+def vigenere_encrypt(plaintext, key):
+    plaintext = plaintext.upper().replace(" ", "")
+    key = key.upper()
+    ciphertext = ""
+    for i in range(len(plaintext)):
+        p = ord(plaintext[i]) - 65
+        k = ord(key[i % len(key)]) - 65
+        c = (p + k) % 26
+        ciphertext += chr(c + 65)
+    return ciphertext
+
+# === Fungsi Dekripsi Vigenère ===
+def vigenere_decrypt(ciphertext, key):
+    ciphertext = ciphertext.upper().replace(" ", "")
+    key = key.upper()
+    plaintext = ""
+    for i in range(len(ciphertext)):
+        c = ord(ciphertext[i]) - 65
+        k = ord(key[i % len(key)]) - 65
+        p = (c - k + 26) % 26
+        plaintext += chr(p + 65)
+    return plaintext
+
+# === Analisis Frekuensi ===
+def frequency_analysis(text):
+    text = text.upper()
+    freq = Counter([ch for ch in text if ch.isalpha()])
+    total = sum(freq.values())
+    for k in freq:
+        freq[k] = round((freq[k] / total) * 100, 2)
+    return freq
+
+def plot_frequency(freq):
+    plt.bar(freq.keys(), freq.values(), color='skyblue', edgecolor='black')
+    plt.title("Analisis Frekuensi Huruf Ciphertext", fontsize=14, fontweight='bold')
+    plt.xlabel("Huruf", fontsize=12)
+    plt.ylabel("Frekuensi (%)", fontsize=12)
+    plt.show()
+
+# === Program Utama ===
+def main():
+    print("=" * 60)
+    print("      PROGRAM ANALISIS VIGENÈRE CIPHER      ")
+    print("=" * 60)
+
+    # Input dari pengguna
+    plaintext = input("\nMasukkan teks asli (plaintext): ").upper()
+    key = input("Masukkan kunci (key): ").upper()
+
+    # Enkripsi dan dekripsi
+    ciphertext = vigenere_encrypt(plaintext, key)
+    decrypted = vigenere_decrypt(ciphertext, key)
+
+    # Analisis frekuensi ciphertext
+    freq = frequency_analysis(ciphertext)
+
+    print("\n=== HASIL ENKRIPSI DAN DEKRIPSI ===")
+    print(f"Plaintext  : {plaintext}")
+    print(f"Kunci      : {key}")
+    print(f"Ciphertext : {ciphertext}")
+    print(f"Dekripsi   : {decrypted}")
+
+    print("\n=== ANALISIS FREKUENSI HURUF ===")
+    for huruf, nilai in sorted(freq.items()):
+        print(f"{huruf} : {nilai}%")
+
+    # Tampilkan grafik
+    plot_frequency(freq)
+
+    print("\n💡 Tips:")
+    print("- Coba ubah plaintext dan key untuk melihat perbedaan hasil.")
+    print("- Gunakan CrypTool untuk validasi hasil enkripsi.\n")
+    print("=" * 60)
+
+# Jalankan program
+if __name__ == "__main__":
+    main()
