@@ -1,0 +1,49 @@
+# === Vigenère Cipher ===
+
+def vigenere_encrypt(plain, key):
+    key = key.upper()
+    result = ''
+    for i, char in enumerate(plain.upper()):
+        if char.isalpha():
+            shift = ord(key[i % len(key)]) - 65
+            result += chr((ord(char) - 65 + shift) % 26 + 65)
+        else:
+            result += char
+    return result
+
+
+def vigenere_decrypt(cipher, key):
+    key = key.upper()
+    result = ''
+    for i, char in enumerate(cipher.upper()):
+        if char.isalpha():
+            shift = ord(key[i % len(key)]) - 65
+            result += chr((ord(char) - 65 - shift) % 26 + 65)
+        else:
+            result += char
+    return result
+
+
+# ======= Bagian untuk menjalankan =======
+if __name__ == "__main__":
+    plaintext = input("Masukkan teks: ")
+    key = input("Masukkan kunci (contoh: LEMON): ")
+
+    # proses enkripsi dan dekripsi
+    ciphertext = vigenere_encrypt(plaintext, key)
+    decrypted = vigenere_decrypt(ciphertext, key)
+
+    print("\n=== HASIL ===")
+    print("Plaintext :", plaintext)
+    print("Kunci     :", key)
+    print("Ciphertext:", ciphertext)
+    print("Dekripsi  :", decrypted)
+
+    # simpan ke file
+    with open("hasil_vigenere.txt", "w") as f:
+        f.write("=== HASIL VIGENERE CIPHER ===\n")
+        f.write(f"Plaintext  : {plaintext}\n")
+        f.write(f"Kunci      : {key}\n")
+        f.write(f"Ciphertext : {ciphertext}\n")
+        f.write(f"Dekripsi   : {decrypted}\n")
+
