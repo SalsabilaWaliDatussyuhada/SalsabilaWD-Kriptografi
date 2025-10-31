@@ -1,0 +1,304 @@
+import tkinter as tk
+from tkinter import messagebox, filedialog
+import customtkinter as ctk
+import numpy as np
+
+# ==================== LOGIKA CIPHER ====================
+
+# === Caesar Cipher ===
+def caesar_enkripsi(teks, geser):
+    hasil = ""
+    for huruf in teks.upper():
+        if huruf.isalpha():
+            hasil += chr((ord(huruf) - 65 + geser) % 26 + 65)
+        else:
+            hasil += huruf
+    return hasil
+
+def caesar_dekripsi(teks, geser):
+    hasil = ""
+    for huruf in teks.upper():
+        if huruf.isalpha():
+            hasil += chr((ord(huruf) - 65 - geser) % 26 + 65)
+        else:
+            hasil += huruf
+    return hasil
+
+# === Vigenère Cipher ===
+def vigenere_enkripsi(teks, kunci):
+    hasil = ""
+    kunci = kunci.upper()
+    index = 0
+    for huruf in teks.upper():
+        if huruf.isalpha():
+            shift = ord(kunci[index % len(kunci)]) - 65
+            hasil += chr((ord(huruf) - 65 + shift) % 26 + 65)
+            index += 1
+        else:
+            hasil += huruf
+    return hasil
+
+def vigenere_dekripsi(teks, kunci):
+    hasil = ""
+    kunci = kunci.upper()
+    index = 0
+    for huruf in teks.upper():
+        if huruf.isalpha():
+            shift = ord(kunci[index % len(kunci)]) - 65
+            hasil += chr((ord(huruf) - 65 - shift) % 26 + 65)
+            index += 1
+        else:
+            hasil += huruf
+    return hasil
+
+# === Affine Cipher ===
+def affine_enkripsi(teks, a, b):
+    hasil = ""
+    for huruf in teks.upper():
+        if huruf.isalpha():
+            hasil += chr(((a * (ord(huruf) - 65) + b) % 26) + 65)
+        else:
+            hasil += huruf
+    return hasil
+
+def affine_dekripsi(teks, a, b):
+    hasil = ""
+    # cari invers a modulo 26
+    for i in range(26):
+        if (a * i) % 26 == 1:
+            a_inv = i
+            break
+    for huruf in teks.upper():
+        if huruf.isalpha():
+            hasil += chr(((a_inv * ((ord(huruf) - 65 - b)) % 26) + 65))
+        else:
+            hasil += huruf
+    return hasil
+
+# === Playfair Cipher ===
+def buat_matriks_playfair(kunci):
+    kunci = kunci.upper().replace("J", "I")
+    abjad = "ABCDEFGHIKLMNOPQRSTUVWXYZ"
+    matriks = []
+    for huruf in kunci + abjad:
+        if huruf not in matriks:
+            matriks.append(huruf)
+    return [matriks[i:i+5] for i in range(0, 25, 5)]
+
+def cari_posisi(matriks, huruf):
+    for i in range(5):
+        for j in range(5):
+            if matriks[i][j] == huruf:
+                return i, j
+    return None
+
+def playfair_enkripsi(teks, kunci):
+    teks = teks.upper().replace("J", "I").replace(" ", "")
+    if len(teks) % 2 != 0:
+        teks += "X"
+    matriks = buat_matriks_playfair(kunci)
+    hasil = ""
+    for i in range(0, len(teks), 2):
+        a, b = teks[i], teks[i+1]
+        row1, col1 = cari_posisi(matriks, a)
+        row2, col2 = cari_posisi(matriks, b)
+        if row1 == row2:
+            hasil += matriks[row1][(col1+1) % 5] + matriks[row2][(col2+1) % 5]
+        elif col1 == col2:
+            hasil += matriks[(row1+1) % 5][col1] + matriks[(row2+1) % 5][col2]
+        else:
+            hasil += matriks[row1][col2] + matriks[row2][col1]
+    return hasil
+
+def playfair_dekripsi(teks, kunci):
+    teks = teks.upper().replace("J", "I").replace(" ", "")
+    matriks = buat_matriks_playfair(kunci)
+    hasil = ""
+    for i in range(0, len(teks), 2):
+        a, b = teks[i], teks[i+1]
+        row1, col1 = cari_posisi(matriks, a)
+        row2, col2 = cari_posisi(matriks, b)
+        if row1 == row2:
+            hasil += matriks[row1][(col1-1) % 5] + matriks[row2][(col2-1) % 5]
+        elif col1 == col2:
+            hasil += matriks[(row1-1) % 5][col1] + matriks[(row2-1) % 5][col2]
+        else:
+            hasil += matriks[row1][col2] + matriks[row2][col1]
+    return hasil
+
+# === Hill Cipher 2x2 ===
+def hill_enkripsi(teks, matriks):
+    teks = teks.upper().replace(" ", "")
+    if len(teks) % 2 != 0:
+        teks += "X"
+    hasil = ""
+    for i in range(0, len(teks), 2):
+        pair = np.array([[ord(teks[i])-65], [ord(teks[i+1])-65]])
+        res = np.dot(matriks, pair) % 26
+        hasil += chr(int(res[0][0])+65) + chr(int(res[1][0])+65)
+    return hasil
+
+def hill_dekripsi(teks, matriks):
+    det = int(np.round(np.linalg.det(matriks))) % 26
+    # cari invers determinan
+    for i in range(26):
+        if (det * i) % 26 == 1:
+            det_inv = i
+            break
+    adj = np.array([[matriks[1][1], -matriks[0][1]], [-matriks[1][0], matriks[0][0]]])
+    inv_matriks = (det_inv * adj) % 26
+    hasil = ""
+    for i in range(0, len(teks), 2):
+        pair = np.array([[ord(teks[i])-65], [ord(teks[i+1])-65]])
+        res = np.dot(inv_matriks, pair) % 26
+        hasil += chr(int(res[0][0])+65) + chr(int(res[1][0])+65)
+    return hasil
+
+# ==================== GUI ====================
+
+ctk.set_appearance_mode("light")
+ctk.set_default_color_theme("blue")
+
+class CipherApp(ctk.CTk):
+    def __init__(self):
+        super().__init__()
+        self.title("Program Tugas Mini Kriptografi || Salsabila Wali Datussyuhada" )
+        self.geometry("800x650")
+
+        # Frame utama
+        frame = ctk.CTkFrame(self)
+        frame.pack(padx=20, pady=20, fill="both", expand=True)
+
+        # Judul
+        judul = ctk.CTkLabel(frame, text="Tugas Mini || Cipher Klasik", font=ctk.CTkFont(size=20, weight="bold"))
+        judul.pack(pady=10)
+
+        # Pilihan cipher
+        self.jenis_cipher = tk.StringVar(value="Caesar")
+        menu_cipher = ctk.CTkOptionMenu(frame, variable=self.jenis_cipher, values=["Caesar", "Vigenère", "Affine", "Playfair", "Hill"])
+        menu_cipher.pack(pady=10)
+
+        # Input teks
+        ctk.CTkLabel(frame, text="Teks:").pack()
+        self.teks_entry = ctk.CTkTextbox(frame, width=500, height=100) 
+        self.teks_entry.pack(pady=5)
+
+        # Input kunci
+        ctk.CTkLabel(frame, text="Kunci (Shift/Kunci/A,B/Matriks):").pack()
+        self.kunci_entry = ctk.CTkEntry(frame, width=400)
+        self.kunci_entry.pack(pady=5)
+
+        # Hasil
+        ctk.CTkLabel(frame, text="Hasil:").pack()
+        self.hasil_entry = ctk.CTkTextbox(frame, width=500, height=100)
+        self.hasil_entry.pack(pady=5)
+
+        # Tombol
+        tombol_frame = ctk.CTkFrame(frame)
+        tombol_frame.pack(pady=10)
+
+        ctk.CTkButton(tombol_frame, text="Enkripsi", command=self.enkripsi).pack(side="left", padx=10)
+        ctk.CTkButton(tombol_frame, text="Dekripsi", command=self.dekripsi).pack(side="left", padx=10)
+        ctk.CTkButton(tombol_frame, text="Hapus", command=self.hapus).pack(side="left", padx=10)
+        ctk.CTkButton(tombol_frame, text="Save", command=self.simpan).pack(side="left", padx=10)
+
+        # Footer
+        footer_frame = ctk.CTkFrame(self, fg_color="#007BFF", height=40, corner_radius=0)
+        footer_frame.pack(side="bottom", fill="x")
+        footer_label = ctk.CTkLabel(footer_frame, text="Salsabila Wali Datussyuhada - 20123017", text_color="white", font=ctk.CTkFont(size=14, weight="bold"))
+        footer_label.pack(pady=8)
+
+    # === FUNGSI ===
+    def enkripsi(self):
+        teks = self.teks_entry.get("1.0", tk.END).strip()
+        kunci = self.kunci_entry.get().strip()
+        jenis = self.jenis_cipher.get()
+
+        if jenis == "Caesar":
+            if not kunci.isdigit():
+                messagebox.showerror("Error", "Kunci Caesar harus berupa angka.")
+                return
+            hasil = caesar_enkripsi(teks, int(kunci))
+
+        elif jenis == "Vigenère":
+            hasil = vigenere_enkripsi(teks, kunci)
+
+        elif jenis == "Affine":
+            try:
+                a, b = map(int, kunci.split(","))
+                hasil = affine_enkripsi(teks, a, b)
+            except:
+                messagebox.showerror("Error", "Kunci Affine harus dalam format a,b (contoh: 5,8).")
+                return
+
+        elif jenis == "Playfair":
+            hasil = playfair_enkripsi(teks, kunci)
+
+        elif jenis == "Hill":
+            try:
+                matriks = np.array([[int(x) for x in kunci.split(",")]]).reshape(2, 2)
+                hasil = hill_enkripsi(teks, matriks)
+            except:
+                messagebox.showerror("Error", "Masukkan matriks 2x2, contoh: 3,3,2,5")
+                return
+
+        self.hasil_entry.delete("1.0", tk.END)
+        self.hasil_entry.insert(tk.END, hasil)
+
+    def dekripsi(self):
+        teks = self.teks_entry.get("1.0", tk.END).strip()
+        kunci = self.kunci_entry.get().strip()
+        jenis = self.jenis_cipher.get()
+
+        if jenis == "Caesar":
+            hasil = caesar_dekripsi(teks, int(kunci))
+
+        elif jenis == "Vigenère":
+            hasil = vigenere_dekripsi(teks, kunci)
+
+        elif jenis == "Affine":
+            try:
+                a, b = map(int, kunci.split(","))
+                hasil = affine_dekripsi(teks, a, b)
+            except:
+                messagebox.showerror("Error", "Format kunci Affine salah.")
+                return
+
+        elif jenis == "Playfair":
+            hasil = playfair_dekripsi(teks, kunci)
+
+        elif jenis == "Hill":
+            try:
+                matriks = np.array([[int(x) for x in kunci.split(",")]]).reshape(2, 2)
+                hasil = hill_dekripsi(teks, matriks)
+            except:
+                messagebox.showerror("Error", "Masukkan matriks 2x2, contoh: 3,3,2,5")
+                return
+
+        self.hasil_entry.delete("1.0", tk.END)
+        self.hasil_entry.insert(tk.END, hasil)
+
+    def hapus(self):
+        self.teks_entry.delete("1.0", tk.END)
+        self.kunci_entry.delete(0, tk.END)
+        self.hasil_entry.delete("1.0", tk.END)
+
+    def simpan(self):
+        hasil = self.hasil_entry.get("1.0", tk.END).strip()
+        if not hasil:
+            messagebox.showerror("Error", "Tidak ada data untuk disimpan.")
+            return
+        file_path = filedialog.asksaveasfilename(defaultextension=".txt",
+                                                 filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
+        if file_path:
+            try:
+                with open(file_path, "w", encoding="utf-8") as f:
+                    f.write(hasil)
+                messagebox.showinfo("Sukses", f"Hasil berhasil disimpan ke {file_path}")
+            except Exception as e:
+                messagebox.showerror("Error", f"Gagal menyimpan file:\n{e}")
+
+# ==================== JALANKAN APP ====================
+if __name__ == "__main__":
+    app = CipherApp()
+    app.mainloop()
