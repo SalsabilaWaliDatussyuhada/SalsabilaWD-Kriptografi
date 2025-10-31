@@ -1,0 +1,38 @@
+# === Caesar Cipher ===
+
+def caesar_encrypt(text, shift):
+    result = ""
+    for char in text:
+        if char.isalpha():  # hanya huruf
+            base = ord('A') if char.isupper() else ord('a')
+            result += chr((ord(char) - base + shift) % 26 + base)
+        else:
+            result += char
+    return result
+
+def caesar_decrypt(text, shift):
+    # dekripsi = geser balik dengan arah negatif
+    return caesar_encrypt(text, -shift)
+
+
+# Jalaninnya disini
+if __name__ == "__main__":
+    plaintext = input("Masukkan teks: ")
+    shift = int(input("Masukkan nilai shift (contoh: 3): "))
+
+    # proses enkripsi dan dekripsi
+    ciphertext = caesar_encrypt(plaintext, shift)
+    decrypted = caesar_decrypt(ciphertext, shift)
+
+    print("\n=== HASIL ===")
+    print("Plaintext :", plaintext)
+    print("Ciphertext:", ciphertext)
+    print("Dekripsi  :", decrypted)
+
+    # simpan ke file
+    with open("hasil_caesar.txt", "w") as f:
+        f.write("=== HASIL CAESAR CIPHER ===\n")
+        f.write(f"Plaintext  : {plaintext}\n")
+        f.write(f"Ciphertext : {ciphertext}\n")
+        f.write(f"Dekripsi   : {decrypted}\n")
+
