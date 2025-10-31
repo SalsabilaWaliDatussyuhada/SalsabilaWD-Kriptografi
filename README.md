@@ -1,2 +1,2 @@
 # SalsabilaWD-cipher-klasik
-Salsabila Wali Datussyuhada - 20123017 (Tugas Mini-Kriptografi)
+Salsabila Wali Datussyuhada - 20123017 (Kumpulan Tugas Kriptografi)
