@@ -1,0 +1,16 @@
+import hashlib
+
+def hash_md5(data):
+    return hashlib.md5(data.encode()).hexdigest()
+
+def hash_sha1(data):
+    return hashlib.sha1(data.encode()).hexdigest()
+
+def hash_sha256(data):
+    return hashlib.sha256(data.encode()).hexdigest()
+
+# CONTOH
+text = "Hello Salsabila!"
+print("MD5:", hash_md5(text))
+print("SHA-1:", hash_sha1(text))
+print("SHA-256:", hash_sha256(text))
