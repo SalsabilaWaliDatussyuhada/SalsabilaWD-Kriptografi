@@ -1,0 +1,49 @@
+from Crypto.PublicKey import RSA
+from Crypto.Signature import pkcs1_15
+from Crypto.Hash import SHA256
+import base64
+
+# =========================
+# 1. BUAT KUNCI RSA
+# =========================
+def generate_keys():
+    key = RSA.generate(2048)
+    private_key = key.export_key()
+    public_key = key.publickey().export_key()
+    return private_key, public_key
+
+# =========================
+# 2. TANDA TANGAN PESAN
+# =========================
+def sign_message(private_key, message):
+    key = RSA.import_key(private_key)
+    hash_msg = SHA256.new(message.encode())
+    signature = pkcs1_15.new(key).sign(hash_msg)
+    return base64.b64encode(signature).decode()
+
+# =========================
+# 3. VERIFIKASI TANDA TANGAN
+# =========================
+def verify_signature(public_key, message, signature):
+    key = RSA.import_key(public_key)
+    hash_msg = SHA256.new(message.encode())
+    signature_bytes = base64.b64decode(signature)
+
+    try:
+        pkcs1_15.new(key).verify(hash_msg, signature_bytes)
+        return True
+    except:
+        return False
+
+# =========================
+# 4. CONTOH PEMAKAIAN
+# =========================
+priv, pub = generate_keys()
+
+pesan = "Dokumen penting banget!"
+tanda_tangan = sign_message(priv, pesan)
+
+valid = verify_signature(pub, pesan, tanda_tangan)
+
+print("Signature :", tanda_tangan)
+print("Valid?    :", valid)
